@@ -2,12 +2,14 @@
 
 namespace Equidna\LaravelDocbot\Console\Commands;
 
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
+use ReflectionMethod;
+
 class GenerateRoutes extends Command
 {
-    protected $signature   = 'docbot:routes';
-    protected $description = 'Generates API documentation and Postman collections.';
-    private const BATCH_SIZE = 50;
-
     /**
      * Execute the console command.
      *
@@ -20,12 +22,15 @@ class GenerateRoutes extends Command
 
         $this->info('Total routes: ' . count($routes));
 
-        $segments = array_merge([
+        $segments = array_merge(
             [
-                'key' => 'web',
-                // No prefix for web, acts as default
-            ]
-        ], config('docbot.segments'));
+                [
+                    'key' => 'web',
+                    // No prefix for web, acts as default
+                ],
+            ],
+            config('docbot.segments')
+        );
 
         $segRoutes = [];
         $params    = [];
@@ -90,12 +95,12 @@ class GenerateRoutes extends Command
     /**
      * Build Markdown documentation for a segment.
      *
-     * @param string $segment
-     * @param array $routes
-     * @param string $tokenVar
+     * @param  string $segment
+     * @param  array  $routes
+     * @param  string $tokenVar
      * @return string
      */
-    private function _buildMarkdown(string $segment, array $routes, string $tokenVar): string
+    private function buildMarkdown(string $segment, array $routes, string $tokenVar): string
     {
         $out = "# $segment documentation\n\n";
         $out .= "Authenticated via Bearer {{" . $tokenVar . "}} in the `Authorization` header.\n\n";
@@ -143,13 +148,13 @@ class GenerateRoutes extends Command
     /**
      * Build Postman collection for a segment.
      *
-     * @param string $segment
-     * @param array $routes
-     * @param string $tokenVar
-     * @param array $pathParams
+     * @param  string $segment
+     * @param  array  $routes
+     * @param  string $tokenVar
+     * @param  array  $pathParams
      * @return array
      */
-    private function _buildPostmanCollection(string $segment, array $routes, string $tokenVar, array $pathParams): array
+    private function buildPostmanCollection(string $segment, array $routes, string $tokenVar, array $pathParams): array
     {
         $variables = [
             [
@@ -231,11 +236,11 @@ class GenerateRoutes extends Command
     /**
      * Build Postman items recursively.
      *
-     * @param array $itemsByPath
-     * @param string $tokenVar
+     * @param  array  $itemsByPath
+     * @param  string $tokenVar
      * @return array
      */
-    private function _buildPostmanItems(array $itemsByPath, string $tokenVar): array
+    private function buildPostmanItems(array $itemsByPath, string $tokenVar): array
     {
         $grouped = [];
 
@@ -276,12 +281,12 @@ class GenerateRoutes extends Command
     /**
      * Make a Postman request item with a clean name.
      *
-     * @param array $route
-     * @param string $tokenVar
-     * @param string $cleanName
+     * @param  array  $route
+     * @param  string $tokenVar
+     * @param  string $cleanName
      * @return array
      */
-    private function _makeRequestItemWithCleanName(array $route, string $tokenVar, string $cleanName): array
+    private function makeRequestItemWithCleanName(array $route, string $tokenVar, string $cleanName): array
     {
         $item = $this->makeRequestItem($route, $tokenVar);
         // Usar el nombre calculado si existe, si no, usar el cleanName
@@ -292,19 +297,23 @@ class GenerateRoutes extends Command
     /**
      * Make a Postman request item.
      *
-     * @param array $route
-     * @param string $tokenVar
+     * @param  array  $route
+     * @param  string $tokenVar
      * @return array
      */
-    private function _makeRequestItem(array $route, string $tokenVar): array
+    private function makeRequestItem(array $route, string $tokenVar): array
     {
         $method = explode('|', $route['method'])[0];
         $uri    = $route['uri'];
 
         // Replace {param} with {{param}} for Postman variable syntax
-        $uriWithVars = preg_replace_callback('/\{(\w+)\}/', function ($matches) {
-            return '{{' . $matches[1] . '}}';
-        }, $uri);
+        $uriWithVars = preg_replace_callback(
+            '/\{(\w+)\}/',
+            function ($matches) {
+                return '{{' . $matches[1] . '}}';
+            },
+            $uri
+        );
 
         $body = null;
 
@@ -344,10 +353,10 @@ class GenerateRoutes extends Command
     /**
      * Extract description from controller action docblock.
      *
-     * @param string $action
+     * @param  string $action
      * @return string
      */
-    private function _extractDescription(string $action): string
+    private function extractDescription(string $action): string
     {
         if (!str_contains($action, '@')) {
             return '';
@@ -361,18 +370,10 @@ class GenerateRoutes extends Command
 
         $ref = new ReflectionMethod($class, $method);
         $doc = $ref->getDocComment();
-    /**
-     * Execute the console command.
-     *
-     * @return void
-     */
-    public function handle(): void
-
         if ($doc) {
             $lines = array_map(fn($l) => trim(trim($l, "/*")), explode("\n", $doc));
             return trim($lines[1] ?? '');
         }
-
         return '';
     }
 }

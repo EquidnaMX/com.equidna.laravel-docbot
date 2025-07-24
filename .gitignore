@@ -1,0 +1,28 @@
+# Laravel & PHP
+/vendor/
+/node_modules/
+/public/storage
+/storage/*.key
+.env
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/storage/app/public
+/storage/framework/
+/storage/logs/
+/bootstrap/cache/
+.env.*
+.env.backup
+.env.local
+.env.production
+.env.staging
+.env.testing
+/.vscode/
+/.idea/
+/.DS_Store
+Thumbs.db
+
+# Ignore composer.lock if you want to lock dependencies
+# composer.lock
