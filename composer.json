@@ -1,0 +1,28 @@
+{
+  "name": "equidnamx/laravel-docbot",
+  "description": "Laravel package for API documentation and custom command listing.",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "EquidnaMX",
+      "email": "info@equidna.mx"
+    }
+  ],
+  "require": {
+    "php": ">=8.0",
+    "laravel/framework": "^11.0 || ^12.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Equidna\\LaravelDocbot\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Equidna\\LaravelDocbot\\LaravelDocbotServiceProvider"
+      ]
+    }
+  }
+}
