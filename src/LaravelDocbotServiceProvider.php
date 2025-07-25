@@ -3,6 +3,8 @@
 namespace Equidna\LaravelDocbot;
 
 use Illuminate\Support\ServiceProvider;
+use Equidna\LaravelDocbot\Console\Commands\GenerateCommands;
+use Equidna\LaravelDocbot\Console\Commands\GenerateRoutes;
 
 /**
  * LaravelDocbotServiceProvider
@@ -40,8 +42,8 @@ class LaravelDocbotServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands(
                 [
-                    \Equidna\LaravelDocbot\Console\Commands\DocbotGenerate::class,
-                    \Equidna\LaravelDocbot\Console\Commands\ListProjectCommands::class,
+                    GenerateCommands::class,
+                    GenerateRoutes::class,
                 ]
             );
 
@@ -49,7 +51,7 @@ class LaravelDocbotServiceProvider extends ServiceProvider
                 [
                     __DIR__ . '/../config/docbot.php' => config_path('docbot.php'),
                 ],
-                'config'
+                'laravel-docbot:config'
             );
         }
     }

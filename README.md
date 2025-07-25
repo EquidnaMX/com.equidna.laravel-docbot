@@ -21,7 +21,7 @@ composer require equidnamx/laravel-docbot
 > The package uses Laravel's auto-discovery. To customize configuration:
 
 ```bash
-php artisan vendor:publish --tag=config
+php artisan vendor:publish --tag=laravel-docbot:config
 ```
 
 ## Usage Examples
