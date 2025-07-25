@@ -1,6 +1,6 @@
 {
   "version": "0.1",
-  "name": "equidnamx/laravel-docbot",
+  "name": "equidna/laravel-docbot",
   "description": "Laravel package for API documentation and custom command listing.",
   "type": "library",
   "license": "MIT",
