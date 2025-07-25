@@ -1,37 +1,75 @@
 <?php
 
 return [
-    // Token variables for API segments
-    'tokens' => [
-        'api' => env('API_TOKEN', ''),
-        'clients-api' => env('CLIENT_TOKEN', ''),
-        'distributor-api' => env('DIST_TOKEN', ''),
-        'web' => env('WEB_TOKEN', ''),
-    ],
-
     'output_dir' => env('DOCBOT_OUTPUT_DIR', base_path('doc')),
 
     // Segments for route documentation
-    'segments' => [
-        [
-            'key' => 'api',
-            'prefix' => 'api/',
-            'token' => 'API_TOKEN',
-        ],
-        [
-            'key' => 'clients-api',
-            'prefix' => 'clients-api/',
-            'token' => 'CLIENT_TOKEN',
-        ],
-        [
-            'key' => 'distributor-api',
-            'prefix' => 'distributors-api/',
-            'token' => 'DIST_TOKEN',
-        ],
-        [
-            'key' => 'hooks',
-            'prefix' => 'hooks/'
-        ]
+    'segments' => [],
+
+    // Namespaces to exclude from custom command listing
+    'exclude_namespaces' => [
+        'app:',
+        'auth:',
+        'breeze:',
+        'cache:',
+        'channel:',
+        'completion',
+        'config:',
+        'db:',
+        'debugbar:',
+        'event:',
+        'foundation:',
+        'fortify:',
+        'help',
+        'horizon:',
+        'ide-helper:',
+        'install:',
+        'jetstream:',
+        'key:',
+        'lang:',
+        'list',
+        'mail:',
+        'make:',
+        'migrate:',
+        'model:',
+        'notifications:',
+        'nova:',
+        'octane:',
+        'optimize',
+        'package:',
+        'passport:',
+        'policy:',
+        'preset:',
+        'queue:',
+        'route:',
+        'sanctum:',
+        'scout:',
+        'schema:',
+        'seed',
+        'serve',
+        'session:',
+        'socialite:',
+        'spark:',
+        'storage:',
+        'stub:',
+        'tinker',
+        'test',
+        'ui:',
+        'vendor:',
+        'view:',
+    ],
+
+    // Commands to exclude from custom command listing
+    'exclude_commands' => [
+        '_complete',
+        'about',
+        'clear-compiled',
+        'db',
+        'docs',
+        'down',
+        'invoke-serialized-closure',
+        'migrate',
+        'up',
     ],
 
 ];

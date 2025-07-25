@@ -10,23 +10,27 @@ use ReflectionMethod;
 
 class GenerateRoutes extends Command
 {
+    protected $signature   = 'docbot:routes';
+    protected $description = 'Generates API documentation and Postman collections.';
+
     /**
-     * Execute the console command.
+     * Execute the console command: generates API documentation and Postman collections.
      *
      * @return void
      */
     public function handle(): void
     {
+        // 1. Get all routes as JSON
         Artisan::call('route:list', ['--json' => true]);
         $routes = json_decode(Artisan::output(), true);
 
         $this->info('Total routes: ' . count($routes));
 
+        // 2. Prepare segments (web + custom)
         $segments = array_merge(
             [
                 [
-                    'key' => 'web',
-                    // No prefix for web, acts as default
+                    'key' => 'web', // No prefix for web, acts as default
                 ],
             ],
             config('docbot.segments')
@@ -35,20 +39,22 @@ class GenerateRoutes extends Command
         $segRoutes = [];
         $params    = [];
 
+        // 3. Initialize segment arrays
         foreach ($segments as $seg) {
             $segRoutes[$seg['key']] = [];
             $params[$seg['key']] = [];
         }
 
-        // Debug: print segment keys
         $this->info('Segments: ' . implode(', ', array_column($segments, 'key')));
 
+        // 4. Assign routes to segments
         foreach ($routes as $route) {
             $uri = $route['uri'];
             $matched = false;
             foreach ($segments as $seg) {
                 if (isset($seg['prefix']) && Str::startsWith($uri, $seg['prefix'])) {
                     $segRoutes[$seg['key']][] = $route;
+                    // Collect path params
                     preg_match_all('/\{(\w+)\}/', $uri, $m);
                     foreach ($m[1] as $p) {
                         $params[$seg['key']][$p] = true;
@@ -67,6 +73,7 @@ class GenerateRoutes extends Command
             }
         }
 
+        // 5. Generate documentation for each segment
         foreach ($segments as $seg) {
             $key = $seg['key'];
             $routesForSegment = $segRoutes[$key];
@@ -80,10 +87,11 @@ class GenerateRoutes extends Command
                 continue;
             }
 
-            // Only one file per format per segment
+            // Markdown documentation
             $markdown = $this->buildMarkdown($key, $routesForSegment, $tokenVar);
             file_put_contents($dir . "/{$key}.md", $markdown);
 
+            // Postman collection
             $collection = $this->buildPostmanCollection($key, $routesForSegment, $tokenVar, array_keys($params[$key]));
             file_put_contents($dir . "/{$key}.json", json_encode($collection, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         }

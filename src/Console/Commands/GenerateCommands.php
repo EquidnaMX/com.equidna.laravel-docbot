@@ -7,81 +7,24 @@ use Illuminate\Support\Str;
 
 class GenerateCommands extends Command
 {
-
     protected $signature   = 'docbot:commands';
     protected $description = 'List all custom Artisan commands defined in the project (excluding built-in Laravel/Artisan commands)';
 
+    /**
+     * List all custom Artisan commands defined in the project (excluding built-in Laravel/Artisan commands).
+     *
+     * @return int
+     */
     public function handle(): int
     {
-        $excludeNamespaces = [
-            'app:',
-            'auth:',
-            'breeze:',
-            'cache:',
-            'channel:',
-            'completion',
-            'config:',
-            'db:',
-            'debugbar:',
-            'event:',
-            'foundation:',
-            'fortify:',
-            'help',
-            'horizon:',
-            'ide-helper:',
-            'install:',
-            'jetstream:',
-            'key:',
-            'lang:',
-            'list',
-            'mail:',
-            'make:',
-            'migrate:',
-            'model:',
-            'notifications:',
-            'nova:',
-            'octane:',
-            'optimize',
-            'package:',
-            'passport:',
-            'policy:',
-            'preset:',
-            'queue:',
-            'route:',
-            'sanctum:',
-            'scout:',
-            'schema:',
-            'seed',
-            'serve',
-            'session:',
-            'socialite:',
-            'spark:',
-            'storage:',
-            'stub:',
-            'tinker',
-            'test',
-            'ui:',
-            'vendor:',
-            'view:',
-        ];
+        $excludeNamespaces = config('docbot.exclude_namespaces', []);
+        $excludeCommands   = config('docbot.exclude_commands', []);
 
-        $excludeCommands = [
-            '_complete',
-            'about',
-            'clear-compiled',
-            'db',
-            'docs',
-            'down',
-            'invoke-serialized-closure',
-            'migrate',
-            'up',
-        ];
+        $allCommands      = $this->getApplication()->all();
+        $projectCommands  = [];
 
-        $allCommands = $this->getApplication()->all();
-        $projectCommands = [];
-
+        // Filter out built-in commands
         foreach ($allCommands as $name => $command) {
-            // Exclude built-in commands by prefix or exact name
             $isBuiltin = false;
             foreach ($excludeNamespaces as $prefix) {
                 if (Str::startsWith($name, $prefix)) {
@@ -97,17 +40,22 @@ class GenerateCommands extends Command
             }
         }
 
+        $outputDir = rtrim(config('docbot.output_dir'), '/\\') . '/commands';
+        $outputFile = $outputDir . '/project_commands.md';
+
+        // Ensure output directory exists
+        if (!is_dir($outputDir)) {
+            mkdir($outputDir, 0777, true);
+        }
+
+        // If no custom commands, write empty file and return
         if (empty($projectCommands)) {
             $this->info('No custom project commands found.');
-            // Also write an empty file
-            $dir = rtrim(config('docbot.output_dir'), '/\\') . '/commands';
-            if (!is_dir($dir)) {
-                mkdir($dir, 0777, true);
-            }
-            file_put_contents($dir . '/project_commands.md', "# Custom Project Artisan Commands\n\nNo custom project commands found.\n");
+            file_put_contents($outputFile, "# Custom Project Artisan Commands\n\nNo custom project commands found.\n");
             return 0;
         }
 
+        // Build markdown table
         $this->info('Custom Project Artisan Commands:');
         $md = "# Custom Project Artisan Commands\n\n";
         $md .= "| Command | Description |\n";
@@ -117,11 +65,8 @@ class GenerateCommands extends Command
             $this->line("- <info>{$name}</info>: {$desc}");
             $md .= "| `{$name}` | {$desc} |\n";
         }
-        $dir = rtrim(config('docbot.output_dir'), '/\\') . '/commands';
-        /**
-         * Execute the console command.
-         *
-         * @return int
-         */
+
+        file_put_contents($outputFile, $md);
+        return 0;
     }
 }
